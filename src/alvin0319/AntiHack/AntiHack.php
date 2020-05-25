@@ -95,7 +95,7 @@ class AntiHack extends PluginBase implements Listener{
 			//$event->setKickMessage($this->getConfig()->getNested("hack-client-detected", "Your client ID shows that you are connecting as a hack client. Please connect as an official MCBE client."));
 			//$event->setCancelled();
 			foreach($this->getServer()->getOnlinePlayers() as $target){
-				if($target->isOp()){
+				if($target-hasPermission("permission.alert")){
 					$replaced = str_replace("{player}", $player->getName(), $this->getConfig()->getNested("hack-client-detected", "Player {player}'s client ID shows that (s)he is connecting as a hack client, It would be nice to observe the player."));
 					$player->sendMessage($replaced);
 				}
@@ -129,9 +129,14 @@ class AntiHack extends PluginBase implements Listener{
 			do{
 				$player = $event->getPlayer();
 				if(!isset($this->breakData[$name = $player->getName()])){
+					foreach($this->getServer()->getOnlinePlayers() as $target){
+				if($target-hasPermission("permission.alert")){
+					$target->sendMessage(TextFormat::colorize("&7Player &c" . $name . " &7tried to break a block without a start-break action."));
 					$this->getLogger()->{$this->loggerType}("Player " . $name . " tried to break a block without a start-break action");
 					$event->setCancelled();
 					break;
+				}
+					}
 				}
 				$target = $event->getBlock();
 				$item = $event->getItem();
@@ -147,9 +152,14 @@ class AntiHack extends PluginBase implements Listener{
 				$expectedTime -= 1; //1 tick compensation
 				$actualTime = ceil(microtime(true) * 20) - $this->breakData[$name = $player->getName()];
 				if($expectedTime > $actualTime){
+					foreach($this->getServer()->getOnlinePlayers() as $target){
+				if($target-hasPermission("permission.alert")){
+					$target->sendMessage(TextFormat::colorize("&cPlayer &4" . $name . " &ctried to break a block too fast, expected &4" . $expectedTime . " &cticks, got &4" . $actualTime . " &cticks."));
 					$this->getLogger()->{$this->loggerType}("Player " . $name . " tried to break a block too fast, expected $expectedTime ticks, got $actualTime ticks");
 					$event->setCancelled();
 					break;
+				}
+					}
 				}
 				unset($this->breakData[$name]);
 			}while(false);
